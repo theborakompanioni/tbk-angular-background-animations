@@ -132,13 +132,11 @@ angular.module('tbkBackgroundAnimations.services')
         particles.push(new Particle());
       }
 
-
-      // Function to paint the canvas black
       function paintCanvas() {
         ctx.fillStyle = config.backgroundColor;
 
-        // Create a rectangle of white color from the
-        // top left (0,0) to the bottom right corner (width,height)
+        // Create a rectangle from thetop left (0,0)
+        // to the bottom right corner (width,height)
         ctx.fillRect(0, 0, width, height);
       }
 
@@ -405,7 +403,10 @@ angular.module('tbkBackgroundAnimations.services')
         config.bubbleCount = width * 0.5;
       }
       if (!config.bubbleColor) {
-        config.bubbleColor = '#fff';
+        config.bubbleColor = '#000';
+      }
+      if (!config.backgroundColor) {
+        config.backgroundColor = '#fff';
       }
 
       var ctx = element.getContext('2d');
@@ -414,7 +415,7 @@ angular.module('tbkBackgroundAnimations.services')
 
       var bubbleColor = {
         colorRgbArray: tbkColors.hexToRgb(
-          config.bubbleColor, '#fff'),
+          config.bubbleColor, '#000'),
         alphaFactor: config.alphaFactor || 0.5,
         scaleFactor: config.scaleFactor || 0.5,
         velocityFactor: config.velocityFactor || 1
@@ -424,8 +425,19 @@ angular.module('tbkBackgroundAnimations.services')
         circles.push(new Circle(bubbleColor));
       }
 
+      function paintCanvas() {
+        ctx.fillStyle = config.backgroundColor;
+
+        // Create a rectangle from thetop left (0,0)
+        // to the bottom right corner (width,height)
+        ctx.fillRect(0, 0, width, height);
+      }
+
       function draw() {
-        ctx.clearRect(0, 0, width, height);
+        //ctx.clearRect(0, 0, width, height);
+
+        paintCanvas();
+
         for (var i = 0, n = circles.length; i < n; i++) {
           circles[i].draw(ctx, width, height);
         }

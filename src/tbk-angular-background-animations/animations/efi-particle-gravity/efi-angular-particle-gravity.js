@@ -17,7 +17,7 @@
         config.particleSize = 3;
       }
       if (!config.particleCount) {
-        var particleCountByCanvasSize = Math.round(width * height / 6000);
+        var particleCountByCanvasSize = Math.round(width * height / 600);
         config.particleCount = Math.max(50, particleCountByCanvasSize);
       }
       if (!config.minDistance) {
@@ -42,13 +42,11 @@
         particles.push(new Particle());
       }
 
-
-      // Function to paint the canvas black
       function paintCanvas() {
         ctx.fillStyle = config.backgroundColor;
 
-        // Create a rectangle of white color from the
-        // top left (0,0) to the bottom right corner (width,height)
+        // Create a rectangle from thetop left (0,0)
+        // to the bottom right corner (width,height)
         ctx.fillRect(0, 0, width, height);
       }
 
