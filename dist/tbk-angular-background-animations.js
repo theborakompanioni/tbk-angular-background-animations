@@ -58,23 +58,54 @@ angular.module('tbkBackgroundAnimations.services')
     };
   }]);
 
+angular.module('tbkBackgroundAnimations.services')
+  .factory('tbkColors', ['$window', function (window) {
+    'use strict';
+
+    var hexToRgb = function hexToRgbInner(hex, defaultHex) {
+      var _defaultHex = (defaultHex || '#000');
+      // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+      var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+      hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+        return r + r + g + g + b + b;
+      });
+
+      var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+      ] : hexToRgbInner(_defaultHex, '#000');
+    };
+
+    var rgbToHex = function (r, g, b) {
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    };
+
+    return {
+      rgbToHex: rgbToHex,
+      hexToRgb: hexToRgb
+    };
+  }]);
+
 (function (angular, undefined) {
   'use strict';
 
-  var particleGravityAnimationFactory = function (tbkAnimationFrame) {
+  var particleGravityAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
       var config = options || {};
       if (!config.backgroundColor) {
         config.backgroundColor = 'rgba(0,0,0,1)';
       }
       if (!config.particleColor) {
-        config.particleColor = 'white';
+        config.particleColor = '#fff';
       }
       if (!config.particleSize) {
         config.particleSize = 3;
       }
       if (!config.particleCount) {
-        config.particleCount = 13; // 150
+        var particleCountByCanvasSize = Math.round(element.width * element.height / 6000);
+        config.particleCount = Math.max(50, particleCountByCanvasSize);
       }
       if (!config.minDistance) {
         config.minDistance = 100; // 70
@@ -82,13 +113,18 @@ angular.module('tbkBackgroundAnimations.services')
       if (!config.accelerate) {
         config.accelerate = 1 / 3000; // 1 / 2000
       }
+      if (!config.strokeColor) {
+        config.strokeColor = '#fff';
+      }
+
+      var strokeColorAsRgbStringPartial = tbkColors.hexToRgb(
+        config.strokeColor, '#fff').join(',');
 
       var ctx = element.getContext('2d');
 
       var W = element.width, H = element.height;
 
       var particles = [];
-
 
       // Time to push the particles into an array
       for (var i = 0, n = config.particleCount; i < n; i++) {
@@ -241,7 +277,8 @@ angular.module('tbkBackgroundAnimations.services')
         ctx.beginPath();
 
         //ctx.strokeStyle = config.particleColor;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (1.2 - strokeColorDelta) + ')';
+        ctx.strokeStyle = 'rgba(' + strokeColorAsRgbStringPartial + ',' +
+          (1.2 - strokeColorDelta) + ')';
 
         ctx.moveTo(p1.x, p1.y);
         ctx.lineTo(p2.x, p2.y);
@@ -274,9 +311,11 @@ angular.module('tbkBackgroundAnimations.services')
   angular.module('tbkBackgroundAnimations.animations.ParticleGravity', [
     'tbkBackgroundAnimations.animations'
   ])
-    .factory('tbkParticleGravityAnimationService', ['tbkAnimationFrame', function (tbkAnimationFrame) {
-      return particleGravityAnimationFactory(tbkAnimationFrame);
-    }])
+    .factory('tbkParticleGravityAnimationService', [
+      'tbkAnimationFrame', 'tbkColors',
+      function (tbkAnimationFrame, tbkColors) {
+        return particleGravityAnimationFactory(tbkAnimationFrame, tbkColors);
+      }])
     .directive('tbkParticleGravityAnimation', [
       'tbkParticleGravityAnimationService',
       function (particleGravityAnimation) {
@@ -305,17 +344,7 @@ angular.module('tbkBackgroundAnimations.services')
                 $canvas.css(key, value);
               });
 
-              var particleCountByCanvasSize = Math.round(canvas.width * canvas.height / 6000);
-              var particleCount = Math.max(50, particleCountByCanvasSize);
-
-              var cancelRequestAnimationFrame = particleGravityAnimation(canvas, {
-                backgroundColor: $scope.options.backgroundColor || '#3d4a57',
-                particleColor: $scope.options.particleColor || '#aaa',
-                particleCount: $scope.options.particleCount || particleCount,
-                particleSize: $scope.options.particleSize || 2,
-                minDistance: $scope.options.minDistance || 77,
-                accelerate: $scope.options.accelerate || 1 / 6000
-              });
+              var cancelRequestAnimationFrame = particleGravityAnimation(canvas, $scope.options);
 
               $scope.$on('$destroy', function () {
                 cancelRequestAnimationFrame();
