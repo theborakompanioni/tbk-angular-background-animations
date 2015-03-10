@@ -3,6 +3,9 @@
 
   var particleGravityAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
+      var width = element.width
+      var height = element.height;
+
       var config = options || {};
       if (!config.backgroundColor) {
         config.backgroundColor = 'rgba(0,0,0,1)';
@@ -14,7 +17,7 @@
         config.particleSize = 3;
       }
       if (!config.particleCount) {
-        var particleCountByCanvasSize = Math.round(element.width * element.height / 6000);
+        var particleCountByCanvasSize = Math.round(width * height / 6000);
         config.particleCount = Math.max(50, particleCountByCanvasSize);
       }
       if (!config.minDistance) {
@@ -32,8 +35,6 @@
 
       var ctx = element.getContext('2d');
 
-      var W = element.width, H = element.height;
-
       var particles = [];
 
       // Time to push the particles into an array
@@ -47,8 +48,8 @@
         ctx.fillStyle = config.backgroundColor;
 
         // Create a rectangle of white color from the
-        // top left (0,0) to the bottom right corner (W,H)
-        ctx.fillRect(0, 0, W, H);
+        // top left (0,0) to the bottom right corner (width,height)
+        ctx.fillRect(0, 0, width, height);
       }
 
       // Now the idea is to create some particles that will attract
@@ -67,8 +68,8 @@
         // Math.random() generates a random value between 0
         // and 1 so we will need to multiply that with the
         // canvas width and height.
-        this.x = Math.random() * W;
-        this.y = Math.random() * H;
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
 
 
         // We would also need some velocity for the particles
@@ -132,16 +133,16 @@
           // We don't want to make the particles leave the
           // area, so just change their position when they
           // touch the walls of the window
-          if (p.x + p.radius > W) {
+          if (p.x + p.radius > width) {
             p.x = p.radius;
           } else if (p.x - p.radius < 0) {
-            p.x = W - p.radius;
+            p.x = width - p.radius;
           }
 
-          if (p.y + p.radius > H) {
+          if (p.y + p.radius > height) {
             p.y = p.radius;
           } else if (p.y - p.radius < 0) {
-            p.y = H - p.radius;
+            p.y = height - p.radius;
           }
 
           // Now we need to make them attract each other

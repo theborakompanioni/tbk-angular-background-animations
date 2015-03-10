@@ -93,6 +93,9 @@ angular.module('tbkBackgroundAnimations.services')
 
   var particleGravityAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
+      var width = element.width
+      var height = element.height;
+
       var config = options || {};
       if (!config.backgroundColor) {
         config.backgroundColor = 'rgba(0,0,0,1)';
@@ -104,7 +107,7 @@ angular.module('tbkBackgroundAnimations.services')
         config.particleSize = 3;
       }
       if (!config.particleCount) {
-        var particleCountByCanvasSize = Math.round(element.width * element.height / 6000);
+        var particleCountByCanvasSize = Math.round(width * height / 6000);
         config.particleCount = Math.max(50, particleCountByCanvasSize);
       }
       if (!config.minDistance) {
@@ -122,8 +125,6 @@ angular.module('tbkBackgroundAnimations.services')
 
       var ctx = element.getContext('2d');
 
-      var W = element.width, H = element.height;
-
       var particles = [];
 
       // Time to push the particles into an array
@@ -137,8 +138,8 @@ angular.module('tbkBackgroundAnimations.services')
         ctx.fillStyle = config.backgroundColor;
 
         // Create a rectangle of white color from the
-        // top left (0,0) to the bottom right corner (W,H)
-        ctx.fillRect(0, 0, W, H);
+        // top left (0,0) to the bottom right corner (width,height)
+        ctx.fillRect(0, 0, width, height);
       }
 
       // Now the idea is to create some particles that will attract
@@ -157,8 +158,8 @@ angular.module('tbkBackgroundAnimations.services')
         // Math.random() generates a random value between 0
         // and 1 so we will need to multiply that with the
         // canvas width and height.
-        this.x = Math.random() * W;
-        this.y = Math.random() * H;
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
 
 
         // We would also need some velocity for the particles
@@ -222,16 +223,16 @@ angular.module('tbkBackgroundAnimations.services')
           // We don't want to make the particles leave the
           // area, so just change their position when they
           // touch the walls of the window
-          if (p.x + p.radius > W) {
+          if (p.x + p.radius > width) {
             p.x = p.radius;
           } else if (p.x - p.radius < 0) {
-            p.x = W - p.radius;
+            p.x = width - p.radius;
           }
 
-          if (p.y + p.radius > H) {
+          if (p.y + p.radius > height) {
             p.y = p.radius;
           } else if (p.y - p.radius < 0) {
-            p.y = H - p.radius;
+            p.y = height - p.radius;
           }
 
           // Now we need to make them attract each other
@@ -345,6 +346,140 @@ angular.module('tbkBackgroundAnimations.services')
               });
 
               var cancelRequestAnimationFrame = particleGravityAnimation(canvas, $scope.options);
+
+              $scope.$on('$destroy', function () {
+                cancelRequestAnimationFrame();
+              });
+            };
+          }
+        };
+      }]);
+}(angular));
+
+
+(function (angular, undefined) {
+  'use strict';
+  var randomCircleConfig = function (maxWidth, maxHeight, options) {
+    var config = options || {};
+    var alphaFactor = config.alphaFactor || 0.5;
+    var scaleFactor = config.scaleFactor || 0.5;
+    var velocityFactor = config.velocityFactor || 1;
+
+    return {
+      pos: {
+        x: Math.random() * maxWidth,
+        y: maxHeight + Math.random() * 100
+      },
+      alpha: 0.1 + Math.random() * alphaFactor,
+      scale: 0.1 + Math.random() * scaleFactor,
+      velocity: 0.1 + Math.random() * velocityFactor
+    };
+  };
+
+  function Circle(options) {
+    var _this = this;
+
+    var config = options || {};
+    var rgbaStringPartial = (config.colorRgbArray || [0, 0, 0]).join(',');
+
+    this.draw = function (ctx, width, height) {
+      if (!_this.options || _this.options.alpha <= 0) {
+        _this.options = randomCircleConfig(width, height, config);
+      }
+      _this.options.pos.y -= _this.options.velocity;
+      _this.options.alpha -= 0.0005;
+      ctx.beginPath();
+      ctx.arc(_this.options.pos.x, _this.options.pos.y, _this.options.scale * 10, 0, 2 * Math.PI, false);
+      ctx.fillStyle = 'rgba(' + rgbaStringPartial + ',' + _this.options.alpha + ')';
+      ctx.fill();
+    };
+  }
+
+  var bubblesAnimationFactory = function (tbkAnimationFrame, tbkColors) {
+    return function (element, options) {
+      var width = element.width
+      var height = element.height;
+
+      var config = options || {};
+      if (!config.bubbleCount) {
+        config.bubbleCount = width * 0.5;
+      }
+      if (!config.bubbleColor) {
+        config.bubbleColor = '#fff';
+      }
+
+      var ctx = element.getContext('2d');
+
+      var circles = [];
+
+      var bubbleColor = {
+        colorRgbArray: tbkColors.hexToRgb(
+          config.bubbleColor, '#fff'),
+        alphaFactor: config.alphaFactor || 0.5,
+        scaleFactor: config.scaleFactor || 0.5,
+        velocityFactor: config.velocityFactor || 1
+      };
+
+      for (var i = 0; i < config.bubbleCount; i++) {
+        circles.push(new Circle(bubbleColor));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        for (var i = 0, n = circles.length; i < n; i++) {
+          circles[i].draw(ctx, width, height);
+        }
+      }
+
+      var requestAnimationFrameId;
+      (function animloop() {
+        draw();
+        requestAnimationFrameId = tbkAnimationFrame.request(animloop);
+      })();
+
+      return function () {
+        tbkAnimationFrame.cancel(requestAnimationFrameId);
+      };
+    };
+  };
+
+  angular.module('tbkBackgroundAnimations.animations.Bubbles', [
+    'tbkBackgroundAnimations.animations'
+  ])
+    .factory('tbkBubblesAnimationService', [
+      'tbkAnimationFrame', 'tbkColors',
+      function (tbkAnimationFrame, tbkColors) {
+        return bubblesAnimationFactory(tbkAnimationFrame, tbkColors);
+      }])
+    .directive('tbkBubblesAnimation', [
+      'tbkBubblesAnimationService',
+      function (bubblesAnimation) {
+        return {
+          scope: {
+            width: '@',
+            height: '@',
+            style: '=?',
+            options: '=?'
+          },
+          template: '<canvas></canvas>',
+          controller: [function () {
+
+          }],
+          compile: function ($element) {
+            var canvas = $element.children()[0];
+
+            return function link($scope) {
+              $scope.options = $scope.options || {};
+              $scope.style = $scope.style || [];
+              canvas.width = $scope.width || canvas.width;
+              canvas.height = $scope.height || canvas.height;
+
+              var $canvas = angular.element(canvas);
+              angular.forEach($scope.style, function (value, key) {
+                $canvas.css(key, value);
+              });
+
+              var cancelRequestAnimationFrame = bubblesAnimation(canvas, $scope.options);
 
               $scope.$on('$destroy', function () {
                 cancelRequestAnimationFrame();
