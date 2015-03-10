@@ -1,0 +1,31 @@
+{
+  "generator-angularjs-library": {
+    "props": {
+      "author": {
+        "name": "theborakompanioni",
+        "email": "theborakompanioni+github@gmail.com"
+      },
+      "libraryName": {
+        "original": "tbk-angular-background-animations",
+        "camelized": "tbkAngularBackgroundAnimations",
+        "dasherized": "tbk-angular-background-animations",
+        "slugified": "tbk-angular-background-animations",
+        "parts": [
+          "tbk",
+          "angular",
+          "background",
+          "animations"
+        ]
+      },
+      "includeModuleDirectives": true,
+      "includeModuleFilters": false,
+      "includeModuleServices": true,
+      "includeAngularModuleResource": false,
+      "includeAngularModuleCookies": false,
+      "includeAngularModuleSanitize": false,
+      "librarySrcDirectory": "src/tbk-angular-background-animations",
+      "libraryUnitTestDirectory": "test/unit/tbk-angular-background-animations",
+      "libraryUnitE2eDirectory": "test/e2e/tbk-angular-background-animations"
+    }
+  }
+}
