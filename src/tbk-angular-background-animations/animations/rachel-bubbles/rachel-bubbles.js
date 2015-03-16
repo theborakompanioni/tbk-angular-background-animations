@@ -38,7 +38,7 @@
 
   var bubblesAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
-      var width = element.width
+      var width = element.width;
       var height = element.height;
 
       var config = options || {};
@@ -87,9 +87,9 @@
       }
 
       var requestAnimationFrameId;
-      (function animloop() {
+      (function animationLoop() {
         draw();
-        requestAnimationFrameId = tbkAnimationFrame.request(animloop);
+        requestAnimationFrameId = tbkAnimationFrame.request(animationLoop);
       })();
 
       return function () {

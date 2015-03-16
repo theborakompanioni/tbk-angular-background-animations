@@ -93,7 +93,7 @@ angular.module('tbkBackgroundAnimations.services')
 
   var particleGravityAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
-      var width = element.width
+      var width = element.width;
       var height = element.height;
 
       var config = options || {};
@@ -107,7 +107,7 @@ angular.module('tbkBackgroundAnimations.services')
         config.particleSize = 3;
       }
       if (!config.particleCount) {
-        var particleCountByCanvasSize = Math.round(width * height / 6000);
+        var particleCountByCanvasSize = Math.round(width * height / 600);
         config.particleCount = Math.max(50, particleCountByCanvasSize);
       }
       if (!config.minDistance) {
@@ -296,9 +296,9 @@ angular.module('tbkBackgroundAnimations.services')
       }
 
       var requestAnimationFrameId;
-      (function animloop() {
+      (function animationLoop() {
         draw();
-        requestAnimationFrameId = tbkAnimationFrame.request(animloop);
+        requestAnimationFrameId = tbkAnimationFrame.request(animationLoop);
       })();
 
       return function () {
@@ -395,7 +395,7 @@ angular.module('tbkBackgroundAnimations.services')
 
   var bubblesAnimationFactory = function (tbkAnimationFrame, tbkColors) {
     return function (element, options) {
-      var width = element.width
+      var width = element.width;
       var height = element.height;
 
       var config = options || {};
@@ -444,9 +444,9 @@ angular.module('tbkBackgroundAnimations.services')
       }
 
       var requestAnimationFrameId;
-      (function animloop() {
+      (function animationLoop() {
         draw();
-        requestAnimationFrameId = tbkAnimationFrame.request(animloop);
+        requestAnimationFrameId = tbkAnimationFrame.request(animationLoop);
       })();
 
       return function () {
